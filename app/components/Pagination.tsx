@@ -6,7 +6,7 @@ import {
   DoubleArrowLeftIcon,
   DoubleArrowRightIcon,
 } from '@radix-ui/react-icons';
-import { Button, Flex, Text } from '@radix-ui/themes';
+import { Button, Flex, Select, Text } from '@radix-ui/themes';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { FC } from 'react';
 
@@ -26,6 +26,8 @@ const Pagination: FC<PaginationProps> = ({
 
   const pageCount = Math.ceil(itemCount / pageSize);
   if (pageCount <= 1) return null;
+
+  const pages = [...Array(pageCount)].map((page, index) => index + 1);
 
   const changePageHandler = (page: number) => {
     const params = new URLSearchParams(searchParams);
@@ -70,6 +72,27 @@ const Pagination: FC<PaginationProps> = ({
       >
         <DoubleArrowRightIcon />
       </Button>
+
+      {pageCount !== 0 && (
+        <Select.Root
+          onValueChange={(value) => changePageHandler(Number(value))}
+          defaultValue={currentPage.toString()}
+        >
+          <Select.Trigger />
+          <Select.Content>
+            <Select.Group>
+              {[...Array(pageCount)].map((val, index) => (
+                <Select.Item
+                  key={Number(index + 1).toString()}
+                  value={Number(index + 1).toString()}
+                >
+                  {Number(index + 1).toString()}
+                </Select.Item>
+              ))}
+            </Select.Group>
+          </Select.Content>
+        </Select.Root>
+      )}
     </Flex>
   );
 };
