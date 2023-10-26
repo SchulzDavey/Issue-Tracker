@@ -6,8 +6,11 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import Skeleton from '../../components/Skeleton';
 import toast, { Toaster } from 'react-hot-toast';
+import prisma from '@/prisma/client';
+import { useRouter } from 'next/navigation';
 
 const AssigneeSelect = ({ issue }: { issue: Issue }) => {
+  const router = useRouter();
   const {
     data: users,
     error,
@@ -25,9 +28,17 @@ const AssigneeSelect = ({ issue }: { issue: Issue }) => {
 
   const assignIssueHandler = async (userId: string) => {
     try {
-      axios.patch('/api/issues/' + issue.id, {
+      const status = users?.map((user) => {
+        if (issue.status !== 'CLOSED') {
+          return userId === 'unassigned' ? 'OPEN' : 'IN_PROGRESS';
+        }
+      })[0];
+
+      await axios.patch('/api/issues/' + issue.id, {
         assignedToUserId: userId === 'unassigned' ? null : userId,
+        status,
       });
+      router.refresh();
     } catch (error) {
       toast.error('Changes could not be saved.');
     }
