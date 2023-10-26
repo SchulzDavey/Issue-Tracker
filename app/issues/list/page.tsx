@@ -1,12 +1,18 @@
 import prisma from '@/prisma/client';
 import Pagination from '@/app/components/Pagination';
-import { Issue, Status } from '@prisma/client';
+import { Issue, Status, User } from '@prisma/client';
 import IssueActions from './IssueActions';
 import IssueTable, { columns } from './IssueTable';
 import { Flex } from '@radix-ui/themes';
 
 interface IssuePageProps {
-  searchParams: { status: Status; orderBy: keyof Issue; page: string };
+  searchParams: {
+    status: Status;
+    orderBy: keyof Issue;
+    page: string;
+    assignee: string;
+    user: keyof User;
+  };
 }
 
 const IssuesPage = async ({ searchParams }: IssuePageProps) => {
@@ -14,7 +20,6 @@ const IssuesPage = async ({ searchParams }: IssuePageProps) => {
   const status = statuses.includes(searchParams.status)
     ? searchParams.status
     : undefined;
-  const where = { status };
 
   const orderBy = columns
     .map((column) => column.value)
@@ -26,13 +31,22 @@ const IssuesPage = async ({ searchParams }: IssuePageProps) => {
   const pageSize = 10;
 
   const issues = await prisma.issue.findMany({
-    where,
+    where: {
+      ...(searchParams.assignee != 'ALL'
+        ? { assignedToUserId: searchParams.assignee }
+        : {}),
+      status,
+    },
     orderBy,
     skip: (page - 1) * pageSize,
     take: pageSize,
   });
 
-  const totalIssues = await prisma.issue.count({ where });
+  const totalIssues = await prisma.issue.count({
+    where: {
+      status,
+    },
+  });
 
   return (
     <Flex direction="column" gap="3">
