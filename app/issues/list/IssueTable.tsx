@@ -1,7 +1,7 @@
 'use client';
 
 import IssueStatusBadge from '@/app/components/IssueStatusBadge';
-import { ArrowUpIcon } from '@radix-ui/react-icons';
+import { ArrowDownIcon, ArrowUpIcon } from '@radix-ui/react-icons';
 import { Table } from '@radix-ui/themes';
 import Link from 'next/link';
 import React from 'react';
@@ -53,9 +53,11 @@ const IssueTable = ({ searchParams, issues }: IssueTableProps) => {
               >
                 {column.label}
               </NextLink>
-              {column.value === searchParams.orderBy && (
+              {column.value === searchParams.orderBy && listOrder === 'asc' && (
                 <ArrowUpIcon className="inline" />
               )}
+              {column.value === searchParams.orderBy &&
+                listOrder === 'desc' && <ArrowDownIcon className="inline" />}
             </Table.ColumnHeaderCell>
           ))}
         </Table.Row>

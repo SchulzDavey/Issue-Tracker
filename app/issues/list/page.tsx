@@ -4,7 +4,6 @@ import { Issue, Status, User } from '@prisma/client';
 import { Flex } from '@radix-ui/themes';
 import IssueActions from './IssueActions';
 import IssueTable, { columns } from './IssueTable';
-import { useListSelector } from '@/redux/store';
 
 interface IssuePageProps {
   searchParams: {
@@ -13,6 +12,7 @@ interface IssuePageProps {
     page: string;
     assignee: string;
     user: keyof User;
+    orderList: string;
   };
 }
 
@@ -21,14 +21,6 @@ const IssuesPage = async ({ searchParams }: IssuePageProps) => {
   const status = statuses.includes(searchParams.status)
     ? searchParams.status
     : undefined;
-
-  console.log(searchParams);
-
-  // const orderBy = columns
-  //   .map((column) => column.value)
-  //   .includes(searchParams.orderBy)
-  //   ? { [searchParams.orderBy]: 'asc' }
-  //   : undefined;
 
   const page = parseInt(searchParams.page) || 1;
   const pageSize = 10;
@@ -40,7 +32,13 @@ const IssuesPage = async ({ searchParams }: IssuePageProps) => {
         : {}),
       status,
     },
-    // orderBy,
+    orderBy: {
+      ...([searchParams.orderBy]
+        ? {
+            [searchParams.orderBy]: searchParams.orderList,
+          }
+        : {}),
+    },
     skip: (page - 1) * pageSize,
     take: pageSize,
   });
