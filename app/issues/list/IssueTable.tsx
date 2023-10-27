@@ -1,3 +1,5 @@
+'use client';
+
 import IssueStatusBadge from '@/app/components/IssueStatusBadge';
 import { ArrowUpIcon } from '@radix-ui/react-icons';
 import { Table } from '@radix-ui/themes';
@@ -5,6 +7,9 @@ import Link from 'next/link';
 import React from 'react';
 import NextLink from 'next/link';
 import { Issue, Status } from '@prisma/client';
+import { useDispatch } from 'react-redux';
+import { AppDispatch, useListSelector } from '@/redux/store';
+import { setListOrder } from '@/redux/features/list-slice';
 
 interface IssueTableProps {
   searchParams: { status: Status; orderBy: keyof Issue; page: string };
@@ -22,18 +27,28 @@ export const columns: {
 ];
 
 const IssueTable = ({ searchParams, issues }: IssueTableProps) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const listOrder = useListSelector((state) => state.listReducer.listOrder);
+
   return (
     <Table.Root variant="surface">
       <Table.Header>
         <Table.Row>
           {columns.map((column) => (
             <Table.ColumnHeaderCell
+              onClick={() => {
+                dispatch(setListOrder(listOrder === 'asc' ? 'desc' : 'asc'));
+              }}
               key={column.label}
               className={column.className}
             >
               <NextLink
                 href={{
-                  query: { ...searchParams, orderBy: column.value },
+                  query: {
+                    ...searchParams,
+                    orderBy: column.value,
+                    orderList: listOrder,
+                  },
                 }}
               >
                 {column.label}

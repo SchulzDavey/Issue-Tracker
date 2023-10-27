@@ -1,9 +1,10 @@
-import prisma from '@/prisma/client';
 import Pagination from '@/app/components/Pagination';
+import prisma from '@/prisma/client';
 import { Issue, Status, User } from '@prisma/client';
+import { Flex } from '@radix-ui/themes';
 import IssueActions from './IssueActions';
 import IssueTable, { columns } from './IssueTable';
-import { Flex } from '@radix-ui/themes';
+import { useListSelector } from '@/redux/store';
 
 interface IssuePageProps {
   searchParams: {
@@ -21,11 +22,13 @@ const IssuesPage = async ({ searchParams }: IssuePageProps) => {
     ? searchParams.status
     : undefined;
 
-  const orderBy = columns
-    .map((column) => column.value)
-    .includes(searchParams.orderBy)
-    ? { [searchParams.orderBy]: 'asc' }
-    : undefined;
+  console.log(searchParams);
+
+  // const orderBy = columns
+  //   .map((column) => column.value)
+  //   .includes(searchParams.orderBy)
+  //   ? { [searchParams.orderBy]: 'asc' }
+  //   : undefined;
 
   const page = parseInt(searchParams.page) || 1;
   const pageSize = 10;
@@ -37,13 +40,16 @@ const IssuesPage = async ({ searchParams }: IssuePageProps) => {
         : {}),
       status,
     },
-    orderBy,
+    // orderBy,
     skip: (page - 1) * pageSize,
     take: pageSize,
   });
 
   const totalIssues = await prisma.issue.count({
     where: {
+      ...(searchParams.assignee != 'ALL'
+        ? { assignedToUserId: searchParams.assignee }
+        : {}),
       status,
     },
   });

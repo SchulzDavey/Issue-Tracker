@@ -27,8 +27,6 @@ const Pagination: FC<PaginationProps> = ({
   const pageCount = Math.ceil(itemCount / pageSize);
   if (pageCount <= 1) return null;
 
-  const pages = [...Array(pageCount)].map((page, index) => index + 1);
-
   const changePageHandler = (page: number) => {
     const params = new URLSearchParams(searchParams);
     params.set('page', page.toString());

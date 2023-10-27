@@ -69,3 +69,18 @@ export async function DELETE(
 
   return NextResponse.json({});
 }
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const session = await getServerSession(authOptions);
+
+  if (!session) return NextResponse.json({}, { status: 401 });
+
+  const issue = await prisma.issue.findUnique({
+    where: { id: parseInt(params.id) },
+  });
+
+  return NextResponse.json(issue, { status: 200 });
+}

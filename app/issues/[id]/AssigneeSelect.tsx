@@ -1,26 +1,27 @@
 'use client';
 
-import { Issue, User } from '@prisma/client';
+import { setIssueStatus } from '@/redux/features/issue-slice';
+import { fetchUsers } from '@/redux/features/user-slice';
+import { AppDispatch, useUserSelector } from '@/redux/store';
+import { Issue } from '@prisma/client';
 import { Select } from '@radix-ui/themes';
-import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import Skeleton from '../../components/Skeleton';
-import toast, { Toaster } from 'react-hot-toast';
-import prisma from '@/prisma/client';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
+import { useDispatch } from 'react-redux';
+import Skeleton from '../../components/Skeleton';
 
 const AssigneeSelect = ({ issue }: { issue: Issue }) => {
   const router = useRouter();
-  const {
-    data: users,
-    error,
-    isLoading,
-  } = useQuery<User[]>({
-    queryKey: ['users'],
-    queryFn: () => axios.get('/api/users').then((res) => res.data),
-    staleTime: 60 * 1000,
-    retry: 3,
-  });
+  const dispatch = useDispatch<AppDispatch>();
+  const { users, isLoading, error } = useUserSelector(
+    (state) => state.userReducer.value
+  );
+
+  useEffect(() => {
+    dispatch(fetchUsers());
+  }, []);
 
   if (isLoading) return <Skeleton />;
 
@@ -38,6 +39,8 @@ const AssigneeSelect = ({ issue }: { issue: Issue }) => {
         assignedToUserId: userId === 'unassigned' ? null : userId,
         status,
       });
+
+      dispatch(setIssueStatus(status!));
       router.refresh();
     } catch (error) {
       toast.error('Changes could not be saved.');
